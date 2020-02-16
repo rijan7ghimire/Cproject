@@ -1,0 +1,8 @@
+# depslib dependency file v1.0
+1581789194 source:c:\users\rijan\desktop\cproject\main.c
+	<stdio.h>
+	<stdlib.h>
+	<stdbool.h>
+	<time.h>
+	<SDL2/SDL.h>
+
