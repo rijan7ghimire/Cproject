@@ -10,7 +10,6 @@ typedef struct
 {
  float x, y ,dy;
  bool jump;
- short life;
  int animframe;
  char *name;
 
@@ -27,6 +26,8 @@ typedef struct
     Bird fbird;
     //renderer
     SDL_Renderer *renderer;
+    //game score
+    int score;
     //time for animations
     int time;
     //images
@@ -37,8 +38,10 @@ typedef struct
     SDL_Texture *label;
     //sounds
     int musicChannel;
-    Mix_Music *bgMusic;
-    Mix_Chunk *jumpSound, *wallColi;
+    //game state
+    int status;
+   //for music
+    Mix_Chunk *bgMusic,*jumpSound, *wallColi;
     //Fonts
     TTF_Font *font;
 

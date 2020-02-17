@@ -4,9 +4,47 @@
 #include"main.h"
 #include<SDL2/SDL_mixer.h>
 
-#define GRAVITY 0.04f
+#define GRAVITY 0.14f
+
+void gameOver(GameState *game){
+
+//     //set the drawing color to blue
+//     SDL_SetRenderDrawColor(game->renderer,0,0,0,0);
+//
+//     //clear the screen to the above given color
+//     SDL_RenderClear(game->renderer);
+ //displaying the game over screen
+    SDL_Surface *Surface;
+    char buffer[100];
+       if (game->font!=NULL){
+        SDL_Color color={250,50,50,255};
+        sprintf(buffer,"GAME OVER::SCORE- %d",game->score);
+    Surface = TTF_RenderText_Blended(game->font,buffer,color);
+   }if (Surface!=NULL){
+   game->label=SDL_CreateTextureFromSurface(game->renderer,Surface);
+   }
+   SDL_FreeSurface(Surface);
+
+//draw the fonts in the screen
+       //set the drawing color to black
+       SDL_SetRenderDrawColor(game->renderer,25,25,25,255);
+      SDL_Rect fontRect={70,120,500,130};
+      SDL_RenderCopy(game->renderer,game->label, NULL, &fontRect);
+     SDL_RenderPresent(game->renderer);
+
+SDL_Delay(2500);
+   game->fbird.x =200;
+   game->fbird.y =220;
+   game->fbird.dy=0;
+   game->time=0;
+   game->status=0;
+   game->score=0;
+   game->fbird.jump=false;
+   game->label=NULL;
 
 
+
+}
 void loadGame(GameState *game){
 //
 SDL_Surface *Surface=NULL;
@@ -35,9 +73,9 @@ if (Surface==NULL)
        game->walls[i].x=400+i*200;
        game->walls[i].y1=0;
        int k= rand()%250;
+       game->walls[i].h1=20+k;
        game->walls[i].y2=k+150;
        game->walls[i].w=60;
-       game->walls[i].h1=20+k;
        game->walls[i].h2=250;
    }
 
@@ -60,40 +98,56 @@ if (Surface==NULL)
    SDL_FreeSurface(Surface);//free the memory the surface was using
 
    //load sounds
-   game->bgMusic =Mix_LoadMUS("bgmusic.WAV");
-   if (game->bgMusic!=NULL)
-   {
-       Mix_VolumeChunk(game->bgMusic,120);
-   }
+   game->bgMusic =Mix_LoadWAV("bgmusic.WAV");
+   game->jumpSound =Mix_LoadWAV("jump.WAV");
+    game->wallColi =Mix_LoadWAV("wallcoli.WAV");
+
    //load Fonts
-   game->font =TTF_OpenFont("crazy.TTF",48);//48 font size
-   if (game->font!=NULL){
-        SDL_Color color={255,255,255,255};
-    Surface = TTF_RenderText_Solid(game->font,"hello",color);
-   }if (Surface!=NULL){
-   game->label=SDL_CreateTextureFromSurface(game->renderer,Surface);
-   }
-   SDL_FreeSurface(Surface);
-   game->fbird.x =180;
+   game->font =TTF_OpenFont("murder.ttf",76);//76 font size
+
+
+   game->fbird.x =200;
    game->fbird.y =220;
    game->fbird.dy=0;
 
 
 }
+void loadfonts(GameState *game){
+
+   //displaying and updating the fonts
+    SDL_Surface *Surface;
+       if (game->font!=NULL){
+        SDL_Color color={255,255,255};
+        char buffer[10];
+        if(game->fbird.dy!=0){
+          if (game->time%105==0)
+            {game->score+=1;
+            sprintf(buffer,"%d",game->score);}}
+
+
+    Surface = TTF_RenderText_Solid(game->font,buffer,color);
+   }if (Surface!=NULL){
+   game->label=SDL_CreateTextureFromSurface(game->renderer,Surface);
+   }
+   SDL_FreeSurface(Surface);
+
+
+}
 void process(GameState *game)
 {
-   game->musicChannel =Mix_PlayChannel(-1,game->bgMusic,-1);
+
     game->time++;
     Bird *fbird=&game->fbird;
     fbird->y +=fbird->dy;
     if (game->fbird.jump==true){
     fbird->dy +=GRAVITY;
-    fbird->x +=1;
+    fbird->x +=2;
     }
-    if (game->time%30==0){
+    if (game->time%20==0){
         if (game->fbird.animframe==0)
         {
             game->fbird.animframe=1;
+
         }
         else {game->fbird.animframe=0;}
 
@@ -111,11 +165,15 @@ void collisionDetect(GameState *game)
     if (bx<0){
         game->fbird.x=0;
          game->fbird.dy=0;
+          game->status=1;//1 for game over
+          Mix_PlayChannel(-1,game->wallColi,0);
     }
     if (by<0){
         game->fbird.y=0;
         //stop any jump velocity
          game->fbird.dy=0;
+          game->status=1;//1 for game over
+          Mix_PlayChannel(-1,game->wallColi,0);
         }
 
     //check collision with the above wall
@@ -125,12 +183,16 @@ void collisionDetect(GameState *game)
         game->fbird.x=gx-bw;
         bx =gx-bw;
          game->fbird.dy=0;
+         game->status=1;//1 for game over
+         Mix_PlayChannel(-1,game->wallColi,0);
 
        }
        else if( bx<=gx+gw && bx>=gx){
         game->fbird.x=gx+gw;
         bx =gx+gw;
          game->fbird.dy=0;
+         game->status=1;
+         Mix_PlayChannel(-1,game->wallColi,0);
 
        }
    }
@@ -153,6 +215,8 @@ void collisionDetect(GameState *game)
     game->fbird.y=400-24;
      by=400-24;
       game->fbird.dy=0;
+       game->status=1;//1 for game over
+       Mix_PlayChannel(-1,game->wallColi,0);
 
    }
   if (by>=gy2 && by+bh<=400){
@@ -161,11 +225,15 @@ void collisionDetect(GameState *game)
         game->fbird.x=gx-bw;
         bx =gx-bw;
         game->fbird.dy=0;
+        game->status=1;//1 for game over
+        Mix_PlayChannel(-1,game->wallColi,0);
        }
        else if( bx<=gx+gw && bx>=gx){
         game->fbird.x=gx+gw;
         bx =gx+gw;
          game->fbird.dy=0;
+         game->status=1;//1 for game over
+         Mix_PlayChannel(-1,game->wallColi,0);
        }
 
   }
@@ -175,7 +243,7 @@ void collisionDetect(GameState *game)
 void doRender(SDL_Renderer *renderer,GameState *game){
      //render display
      //set the drawing color to blue
-     SDL_SetRenderDrawColor(renderer,144,234,248,255);
+     SDL_SetRenderDrawColor(renderer,144,234,248,100);
 
      //clear the screen to the above given color
      SDL_RenderClear(renderer);
@@ -194,9 +262,7 @@ void doRender(SDL_Renderer *renderer,GameState *game){
       for (int i=0;i<500;i++){
             int h =(game->walls[i].x),k=(game->walls[i].y2);
             int h1 =game->walls[i].h1;
-//            if (game->scrollx<300){
-//                game->scrollx=0;
-//            }
+
      SDL_Rect  wallRect={game->scrollx+h,0,60,h1};
      SDL_RenderCopy(renderer,game->wall,NULL,&wallRect);
 
@@ -209,8 +275,9 @@ void doRender(SDL_Renderer *renderer,GameState *game){
      SDL_RenderCopy(renderer,game->ground,NULL,&groundRect);
      SDL_RenderPresent(renderer);
       //draw the fonts in the screen
-      SDL_Rect fontRect={200,60,48,36};
-      SDL_RenderCopy(renderer,game->label,NULL,&fontRect);
+      SDL_Rect fontRect={320,0,60,100};
+      SDL_RenderCopy(renderer,game->label, NULL, &fontRect);
+     SDL_RenderPresent(renderer);
 
 
 }
@@ -240,9 +307,10 @@ int processEvents(SDL_Window *window,GameState *game){
                         done =1;
                         break;
                     case SDLK_SPACE:
-
+                     Mix_VolumeChunk(game->jumpSound,64);
+                     Mix_PlayChannel(2,game->jumpSound,0);
                        game->fbird.jump=true;
-                       game->fbird.dy =-2;
+                       game->fbird.dy =-4;
                     }
                     break;
                 }
@@ -265,7 +333,7 @@ int processEvents(SDL_Window *window,GameState *game){
 //  }
 //  if(state[SDL_SCANCODE_DOWN]){
 //  game->fbird.y +=10;
-  //}
+//  }
   game->scrollx=-game->fbird.x+300;
 
 
@@ -284,15 +352,21 @@ int main(int argc, char *argv[])
        GameState game;
      game.renderer =renderer;
      game.scrollx = 0;
-     game.fbird.jump=true;
+     game.fbird.jump=false;
      game.fbird.animframe=0;
      game.time =0;
      game.font =NULL;
+     game.bgMusic =NULL;
+     game.score =0;
+     game.status=0;
 
     Mix_OpenAudio(MIX_DEFAULT_FREQUENCY,MIX_DEFAULT_FORMAT,MIX_DEFAULT_CHANNELS,4096);//initialize audio
      TTF_Init();
+
      loadGame(&game);
      int done =0;
+//play bgmusic
+            Mix_PlayChannel(-1,game.bgMusic,-1);
      while(!done){
             //check for events
      done= processEvents(window,&game);
@@ -303,6 +377,10 @@ int main(int argc, char *argv[])
      doRender(renderer,&game);
             //delay
 //   SDL_Delay(10);
+     if (game.status==1){
+        gameOver(&game);
+     }
+     loadfonts(&game);
      }
      //initialize ttf font
 
@@ -315,12 +393,15 @@ int main(int argc, char *argv[])
     SDL_DestroyTexture(game.bird1);
     SDL_DestroyTexture(game.bird2);
     if (game.label!=NULL)
-        SDL_DestroyTexture(game.font);
+        SDL_DestroyTexture(game.label);
     TTF_CloseFont(game.font);
      //close and destroy the windows
+     Mix_FreeChunk(game.bgMusic);
+     Mix_FreeChunk(game.jumpSound);
+     Mix_FreeChunk(game.wallColi);
      SDL_DestroyWindow(window);
      SDL_DestroyRenderer(renderer);
-
+    Mix_CloseAudio();
      TTF_Quit();
      //clean up
      SDL_Quit();

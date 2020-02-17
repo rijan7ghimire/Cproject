@@ -1,12 +1,12 @@
 # depslib dependency file v1.0
-1581798270 source:c:\users\rijan\desktop\cproject\main.c
+1581979536 source:c:\users\rijan\desktop\cproject\main.c
 	<SDL2/SDL.h>
 	<stdio.h>
 	<SDL2/SDL_ttf.h>
 	"main.h"
 	<SDL2/SDL_mixer.h>
 
-1581798180 c:\users\rijan\desktop\cproject\main.h
+1581975395 c:\users\rijan\desktop\cproject\main.h
 	<SDL2/SDL.h>
 	<SDL2/SDL_image.h>
 	<SDL2/SDL_mixer.h>

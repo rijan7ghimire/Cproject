@@ -1,8 +1,14 @@
 # depslib dependency file v1.0
-1581789194 source:c:\users\rijan\desktop\cproject\main.c
-	<stdio.h>
-	<stdlib.h>
-	<stdbool.h>
-	<time.h>
+1581979536 source:c:\users\rijan\desktop\cproject\main.c
 	<SDL2/SDL.h>
+	<stdio.h>
+	<SDL2/SDL_ttf.h>
+	"main.h"
+	<SDL2/SDL_mixer.h>
+
+1581975395 c:\users\rijan\desktop\cproject\main.h
+	<SDL2/SDL.h>
+	<SDL2/SDL_image.h>
+	<SDL2/SDL_mixer.h>
+	<stdbool.h>
 
